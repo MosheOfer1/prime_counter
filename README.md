@@ -1,4 +1,4 @@
-# Prime Number Checker using Thread Pool with Hazard Pointers
+# Prime Number Checker using Thread Pool with Lock-free queue and Hazard Pointers
 
 ## Overview
 This project implements a multi-threaded prime number checker using a thread pool and hazard pointers for safe memory reclamation. The program reads integers from standard input, checks each number for primality using the Miller-Rabin test, and counts the total number of prime numbers found. The Michael Scott Queue Algorithm is a lock-free concurrent queue algorithm designed to allow multiple threads to enqueue and dequeue elements without the need for locks, which can lead to contention and performance degradation in highly concurrent scenarios.
