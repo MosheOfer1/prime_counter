@@ -13,7 +13,6 @@
 
 // Queue structure with _Atomic qualified head and tail pointers
 typedef struct Queue {
-    // NodePool* node_pool;
     pthread_mutex_t size_mutex;
     pthread_cond_t size_cond;
     _Atomic(int) size;
