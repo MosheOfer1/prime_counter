@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
     
     ThreadPool *pool = thread_pool_init(num_of_workers, isPrime);
 
-        // Read numbers from stdin until end of file
+    // Read numbers from stdin until end of file
     while (true) {
         int *nums = (int *)calloc(chunk_size, sizeof(int));
         if (nums == NULL) {
@@ -145,17 +145,11 @@ int main(int argc, char *argv[]) {
             task[i] = nums[i];
         }
         task[count] = -1;
-        
-        // printf("task address: %p, contents: ", (void*)task);
-        // for (int i = 0; i <= count; i++) {
-        //     printf("%d ", task[i]);
-        // }
-        // printf("\n");
-        
+
         thread_pool_add_task(pool, task);
         free(nums);
     }
-    //sleep(1);
+
     total_counter = thread_pool_destroy(pool); // Shutdown gracefully
 
     printf("%d total primes.\n", total_counter);
