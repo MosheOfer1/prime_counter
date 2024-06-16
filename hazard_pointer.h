@@ -15,7 +15,7 @@ typedef struct HazardPointer {
 
 // Node structure with _Atomic qualified next pointer
 typedef struct Node {
-    int data;
+    int *data;
     _Atomic(struct Node*) next;
 } Node;
 

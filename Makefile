@@ -2,7 +2,7 @@
 
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -pthread -g
+CFLAGS = -Wall -Wextra -pthread
 
 # Target binaries
 TARGETS = randomGenerator primeCounter naive

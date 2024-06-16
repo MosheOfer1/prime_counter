@@ -10,16 +10,22 @@ void* worker_thread(void* arg) {
     free(thread_arg);
     
     while (true) {
-        int num = dequeue(pool->task_queue, thread_index);
-        if (atomic_load(&pool->stop) && num == -1) {
+        int* nums = dequeue(pool->task_queue, thread_index);
+        if (atomic_load(&pool->stop) && nums == NULL) {
             if (atomic_load(&pool->task_queue->head) == atomic_load(&pool->task_queue->tail)) 
                 break;  // Exit if the queue is empty and stop flag is set
         }
-
-        if (num != -1) {
-            if (pool->function(num)) {
-                pool->true_counts[thread_index]++;
-            }   
+        // printf("Got task address: %p\n", (void*)nums);
+        if (nums != NULL) {
+            int i = 0;
+            while (nums[i] != -1) {
+                // printf("%d ", nums[i]);
+                if (pool->function(nums[i])) {
+                    pool->true_counts[thread_index]++;
+                }
+                i++;
+            }  
+            free(nums);
         }
         
     }  
@@ -68,8 +74,8 @@ ThreadPool* thread_pool_init(int number_of_threads, bool (*function)(int)) {
 }
 
 // Add a task to the thread pool
-void thread_pool_add_task(ThreadPool* pool, int num) {
-    enqueue(pool->task_queue, num);
+void thread_pool_add_task(ThreadPool* pool, int* nums) {
+    enqueue(pool->task_queue, nums);
 }
 
 // Destroy the thread pool

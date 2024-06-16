@@ -6,7 +6,7 @@
 HazardPointer hp;
 
 // Create a new node
-Node *new_node(Queue *queue, int data)
+Node *new_node(Queue *queue, int *data)
 {
     int size = atomic_fetch_add(&queue->size, 1);
     if (size == QUEUE_MAX_SIZE)
@@ -57,7 +57,7 @@ Queue *new_queue(int number_of_threads)
 }
 
 // This function done only by a single thread
-void enqueue(Queue *queue, int data)
+void enqueue(Queue *queue, int *data)
 {
     Node *node = new_node(queue, data);
     Node *tail = queue->tail;
@@ -67,12 +67,12 @@ void enqueue(Queue *queue, int data)
 }
 
 // Dequeue an element (thread-safe)
-int dequeue(Queue *queue, int thread_index)
+int *dequeue(Queue *queue, int thread_index)
 {
     Node *head;
     Node *tail;
     Node *next;
-    int data;
+    int *data;
 
     while (true) {
         head = atomic_load(&queue->head);
@@ -87,12 +87,12 @@ int dequeue(Queue *queue, int thread_index)
         if (head == atomic_load(&queue->head)) {
             if (head == tail) {
                 if (next == NULL) {
-                    return -1; // Queue is empty
+                    return NULL; // Queue is empty
                 }
                 atomic_compare_exchange_strong(&queue->tail, &tail, next);
             }
             else {
-                data = head->data;
+                data = next->data;
                 if (atomic_compare_exchange_strong(&queue->head, &head, next)) {
                     // Decrement the size atomically
                     int size = atomic_fetch_sub(&queue->size, 1);

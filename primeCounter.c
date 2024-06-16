@@ -11,6 +11,9 @@
 #include <unistd.h>
 #include <sys/sysinfo.h>
 
+#define DFAULT_CHUNK_SIZE 100
+#define DFAULT_WORKERS 2
+
 int get_num_cores() {
     return sysconf(_SC_NPROCESSORS_ONLN);
 }
@@ -66,7 +69,7 @@ bool isPrime(int n) {
     // Number of iterations (adjust this value for more or less accuracy)
     int k = 5;  // This is a good balance between accuracy and performance
 
-    // Corner cases
+    // // Corner cases
     if (n <= 1 || n == 4) {
         return false;
     }
@@ -91,25 +94,68 @@ bool isPrime(int n) {
 }
 
 int main(int argc, char *argv[]) {
-    int num;
     int total_counter = 0;
     int num_of_workers = get_num_cores() - 1;
+    int chunk_size = DFAULT_CHUNK_SIZE;
     
     // If a command-line argument is provided, use it as the number of workers
     if (argc > 1) {
         num_of_workers = atoi(argv[1]);
         if (num_of_workers <= 0) {
-            fprintf(stderr, "Invalid number of workers specified. Using default: %d\n", num_of_workers);
-            num_of_workers = num_of_workers;
+            fprintf(stderr, "Invalid number of workers specified. Using default: %d\n", DFAULT_WORKERS);
+            num_of_workers = DFAULT_WORKERS;
         }
-    }    
-    ThreadPool *pool = thread_pool_init(num_of_workers, isPrime);
-
-    // Read numbers from stdin until end of file
-    while (scanf("%d", &num) != EOF) {
-        thread_pool_add_task(pool, num);
+    }
+    if (argc > 2) {
+        chunk_size = atoi(argv[2]);
+        if (chunk_size <= 0) {
+            fprintf(stderr, "Invalid number of chunk size specified. Using default: %d\n", DFAULT_CHUNK_SIZE);
+            chunk_size = DFAULT_CHUNK_SIZE;
+        }
     }
     
+    ThreadPool *pool = thread_pool_init(num_of_workers, isPrime);
+
+        // Read numbers from stdin until end of file
+    while (true) {
+        int *nums = (int *)calloc(chunk_size, sizeof(int));
+        if (nums == NULL) {
+            perror("Failed to allocate memory");
+            exit(EXIT_FAILURE);
+        }
+        
+        int count = 0;
+        while (count < chunk_size && scanf("%d", &nums[count]) != EOF) {
+            count++;
+        }
+
+        if (count == 0) {
+            free(nums);
+            break;
+        }
+
+        int *task = (int *)calloc(count + 1, sizeof(int));
+        if (task == NULL) {
+            perror("Failed to allocate memory for task");
+            free(nums);
+            exit(EXIT_FAILURE);
+        }
+
+        for (int i = 0; i < count; i++) {
+            task[i] = nums[i];
+        }
+        task[count] = -1;
+        
+        // printf("task address: %p, contents: ", (void*)task);
+        // for (int i = 0; i <= count; i++) {
+        //     printf("%d ", task[i]);
+        // }
+        // printf("\n");
+        
+        thread_pool_add_task(pool, task);
+        free(nums);
+    }
+    //sleep(1);
     total_counter = thread_pool_destroy(pool); // Shutdown gracefully
 
     printf("%d total primes.\n", total_counter);

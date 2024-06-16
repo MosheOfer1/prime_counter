@@ -24,7 +24,7 @@ typedef struct {
 ThreadPool* thread_pool_init(int thread_count, bool (*function)(int));
 
 // Function to add a task to the thread pool
-void thread_pool_add_task(ThreadPool* pool, int num);
+void thread_pool_add_task(ThreadPool* pool, int* nums);
 
 // Function to destroy the thread pool
 int thread_pool_destroy(ThreadPool* pool);
